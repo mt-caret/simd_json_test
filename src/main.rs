@@ -8,6 +8,8 @@ use structopt::StructOpt;
 #[derive(Debug, StructOpt)]
 struct Opt {
     input: PathBuf,
+    #[structopt(short, long)]
+    disable_simd: bool,
 }
 
 fn main() -> std::io::Result<()> {
@@ -15,7 +17,12 @@ fn main() -> std::io::Result<()> {
     let f = File::open(opt.input.clone())?;
 
     let reader = BufReader::new(f);
-    let _: Value = simd_json::serde::from_reader(reader)?;
+    let _: Value = 
+        if opt.disable_simd {
+            serde_json::from_reader(reader)?
+        } else {
+            simd_json::serde::from_reader(reader)?
+        };
 
     Ok(())
 }
